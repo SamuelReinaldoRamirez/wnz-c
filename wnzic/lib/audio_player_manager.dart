@@ -23,6 +23,8 @@ class AudioPlayerManager extends ChangeNotifier {
     _init();
   }
 
+  String get currentTitle => currentTrackPath?.split('/').last ?? 'Aucun titre';
+
   void _init() {
     player.playerStateStream.listen((state) {
       isPlaying = state.playing;
