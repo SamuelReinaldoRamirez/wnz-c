@@ -1,10 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'audio_player_manager.dart';
-import 'audio_player.dart';
 
 class FolderPickerPage extends StatefulWidget {
   @override
@@ -63,14 +62,8 @@ class _FolderPickerPageState extends State<FolderPickerPage> {
                     onTap: () {
                       context.read<AudioPlayerManager>().loadPlaylist(
                             musicFiles.map((e) => e.path).toList(),
-                            index,
+                            startIndex: index,
                           );
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AudioPlayerScreen(),
-                        ),
-                      );
                     },
                   );
                 },

@@ -1,15 +1,114 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:audio_session/audio_session.dart';
 import 'audio_player_manager.dart';
 
-class AudioPlayerScreen extends StatelessWidget {
+class AudioPlayerScreen extends StatefulWidget {
+  final List<String> playlist;
+  final int initialIndex;
+
+  const AudioPlayerScreen({
+    required this.playlist,
+    this.initialIndex = 0,
+  });
+
+  @override
+  _AudioPlayerScreenState createState() => _AudioPlayerScreenState();
+}
+
+class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
+  late AudioPlayer _player;
+  Duration _duration = Duration.zero;
+  Duration _position = Duration.zero;
+  bool _isPlaying = false;
+  int _currentIndex = 0;
+  List<String> playedTracks = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _player = AudioPlayerManager().player;
+    _currentIndex = widget.initialIndex;
+    _init();
+  }
+
+  Future<void> _init() async {
+    final session = await AudioSession.instance;
+    await session.configure(AudioSessionConfiguration.music());
+
+    await _loadCurrentTrack();
+
+    _player.positionStream.listen((pos) {
+      if (mounted) {
+        setState(() {
+          _position = pos;
+        });
+      }
+    });
+
+    _player.playerStateStream.listen((state) {
+      if (mounted) {
+        setState(() {
+          _isPlaying = state.playing;
+        });
+      }
+
+      if (state.processingState == ProcessingState.completed) {
+        _playNext();
+      }
+    });
+  }
+
+  Future<void> _loadCurrentTrack() async {
+    if (_currentIndex >= 0 && _currentIndex < widget.playlist.length) {
+      String currentTrack = widget.playlist[_currentIndex];
+      await _player.setFilePath(currentTrack);
+      _duration = await _player.duration ?? Duration.zero;
+
+      if (!playedTracks.contains(currentTrack)) {
+        playedTracks.add(currentTrack);
+        print("Historique : $playedTracks");
+      }
+
+      _player.play(); // Auto play after loading
+    }
+  }
+
+  void _togglePlayPause() {
+    if (_player.playing) {
+      _player.pause();
+    } else {
+      _player.play();
+    }
+  }
+
+  void _playNext() {
+    if (_currentIndex < widget.playlist.length - 1) {
+      _currentIndex++;
+      _loadCurrentTrack();
+    } else {
+      print("Fin de la playlist.");
+    }
+  }
+
+  void _playPrevious() {
+    if (_currentIndex > 0) {
+      _currentIndex--;
+      _loadCurrentTrack();
+    } else {
+      print("Déjà au début de la playlist.");
+    }
+  }
+
+  @override
+  void dispose() {
+    // Ne plus dispose le player ici !
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final playerManager = context.watch<AudioPlayerManager>();
-
-    String currentTrackName = playerManager.playlist.isNotEmpty
-        ? playerManager.playlist[playerManager.currentIndex].split('/').last
-        : 'Aucune piste';
+    String currentTrackName = widget.playlist[_currentIndex].split('/').last;
 
     return Scaffold(
       appBar: AppBar(title: Text("Lecture : $currentTrackName")),
@@ -19,30 +118,30 @@ class AudioPlayerScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(
-              icon: Icon(playerManager.isPlaying ? Icons.pause : Icons.play_arrow),
+              icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
               iconSize: 64,
-              onPressed: playerManager.togglePlayPause,
+              onPressed: _togglePlayPause,
             ),
             Slider(
-              value: playerManager.position.inSeconds.toDouble().clamp(0, playerManager.duration.inSeconds.toDouble()),
-              max: playerManager.duration.inSeconds.toDouble(),
+              value: _position.inSeconds.toDouble().clamp(0, _duration.inSeconds.toDouble()),
+              max: _duration.inSeconds.toDouble(),
               onChanged: (value) {
-                playerManager.player.seek(Duration(seconds: value.toInt()));
+                _player.seek(Duration(seconds: value.toInt()));
               },
             ),
             Text(
-              "${_formatDuration(playerManager.position)} / ${_formatDuration(playerManager.duration)}",
+              "${_formatDuration(_position)} / ${_formatDuration(_duration)}",
               style: TextStyle(fontSize: 16),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
-                  onPressed: playerManager.playPrevious,
+                  onPressed: _playPrevious,
                   child: Text('Previous'),
                 ),
                 ElevatedButton(
-                  onPressed: playerManager.playNext,
+                  onPressed: _playNext,
                   child: Text('Next'),
                 ),
               ],
@@ -51,10 +150,10 @@ class AudioPlayerScreen extends StatelessWidget {
             Text("Historique :"),
             Expanded(
               child: ListView.builder(
-                itemCount: playerManager.playedTracks.length,
+                itemCount: playedTracks.length,
                 itemBuilder: (context, index) {
                   return ListTile(
-                    title: Text(playerManager.playedTracks[index].split('/').last),
+                    title: Text(playedTracks[index].split('/').last),
                   );
                 },
               ),
@@ -72,4 +171,3 @@ class AudioPlayerScreen extends StatelessWidget {
     return "$minutes:$seconds";
   }
 }
-

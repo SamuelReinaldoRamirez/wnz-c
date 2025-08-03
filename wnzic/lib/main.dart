@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'audio_player_manager.dart';
 import 'folder_picker_page.dart';
+import 'global_scaffold.dart';
 
 void main() {
   runApp(
@@ -17,10 +18,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Music Folder Picker',
-      home: FolderPickerPage(),
+      home: GlobalScaffold(
+        child: FolderPickerPage(),
+      ),
     );
   }
 }
+
 
 
 // import 'package:flutter/material.dart';
