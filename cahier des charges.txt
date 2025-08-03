@@ -1,0 +1,26 @@
+- enchainement des lectures OK
+- ne couper la lecture que si on fait pause ou bien que l'on ferme l'appli. pas quand on fait retour.
+- faire en sorte que la liste des previous soit sauvegardée quand on fait retour et qu'on puisse éventuellement la vider
+- sauvegarder dans shared préférences le dossier où il y a les musiques pour ne pas avoir à choisir le dossier à chaque fois
+- playlists (c'est à dire qu'on stock des pointeurs vers les pistes audio pour pas prendre trop de mémoire)
+- files d'attentes
+- partager une musique en tant que fichier mp3
+- créer des alias aux noms de fichiers
+- recherche par titre
+- lecture en boucle
+- designs
+- nettoyer le bruit des pistes audio
+- pouvoir augmenter le volume en modifiant la piste audio
+- lectures aléatoires
+- ajouter l'appli à google home pour qu'elle soit utilisable par ok google
+- lectures planifiées
+- mettre une musique ou un extrait en tant qu'alarme
+- mettre une musique ou un extrait en tant que sonnerie de SMS par contact
+- mettre une musique ou un extrait en tant que sonnerie d'appel par contact
+- logo
+- télécharger depuis un lien yt
+- téléchargement feat aws lambda + spytify / ou directement depuis un lien Spotify si c'est possible
+- files d'attentes partagées / playlistes partagées (on passe en streamming la? ou on reserve une instance ec2 tant qu'au moins 1 user est co?)
+- clustering pour faire des catégories de musiques suivant l'analyse fréquentielle
+- extraire les données user sur les écoutes faites
+
